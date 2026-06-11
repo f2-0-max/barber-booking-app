@@ -113,5 +113,32 @@ html {
 
 /* Dialog overlay */
 [data-radix-dialog-overlay] {
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.7) !important;
+}
+
+/* Calendar dark theme */
+.rdp {
+  --rdp-accent-color: #c9a84c;
+  --rdp-background-color: rgba(201,168,76,0.15);
+  color: white;
+}
+.rdp-day_selected, .rdp-day_selected:hover {
+  background-color: #c9a84c !important;
+  color: black !important;
+  font-weight: 700;
+}
+.rdp-day:hover:not(.rdp-day_selected) {
+  background-color: rgba(201,168,76,0.15) !important;
+}
+.rdp-nav_button:hover {
+  background-color: rgba(201,168,76,0.15) !important;
+}
+.rdp-caption_label {
+  color: #c9a84c;
+  font-weight: 700;
+}
+.rdp-head_cell {
+  color: #666;
+  font-size: 11px;
 }
