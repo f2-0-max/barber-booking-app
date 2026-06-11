@@ -365,6 +365,10 @@ export default function Home() {
 
       {/* ── TIME SLOTS ── */}
       <main className="px-4 py-4 pb-28 space-y-2.5">
+        {/* SEO H2 - Hidden but indexed */}
+        <h2 className="sr-only">
+          {lang === "ar" ? "جدول مواعيد حلاق علي" : "Ali'nin Berber Randevu Takvimi"}
+        </h2>
         {TIME_SLOTS.map((slot) => {
           const appt = bookedMap[slot];
           const isBooked = !!appt;
