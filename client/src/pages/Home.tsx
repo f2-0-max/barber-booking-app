@@ -19,6 +19,9 @@ const BARBER_NAME = "Ali";
 const BARBER_NAME_AR = "علي";
 const BARBER_PHONE = "0558394644";
 const BARBER_PHONE_DISPLAY = "055 839 4644";
+const BARBER_LOCATION_AR = "مدينة الرياض";
+const BARBER_LOCATION_EN = "Riyadh";
+const BARBER_LOCATION_MAPS = "https://maps.google.com/?q=Riyadh";
 
 // Hourly slots: 10:00 → 23:00
 function generateTimeSlots(): string[] {
@@ -39,6 +42,7 @@ const L = {
   whatsapp:   { ar: "واتسآب",           tr: "WhatsApp" },
   workHours:  { ar: "ساعات العمل",     tr: "Çalışma Saatleri" },
   workTime:   { ar: "10:00 ص — 11:00 م",   tr: "10:00 - 23:00" },
+  location:   { ar: "الموقع",         tr: "Konum" },
   today:      { ar: "اليوم",           tr: "Bugün" },
   backToday:  { ar: "العودة لليوم",    tr: "Bugüne Dön" },
   tapChange:  { ar: "اضغط لتغيير",    tr: "Değiştir" },
@@ -265,6 +269,17 @@ export default function Home() {
               <p className="text-[10px] text-gray-600 mt-1">
                 {t("workHours", lang)}: <span className="text-[#c9a84c]/70">{t("workTime", lang)}</span>
               </p>
+              <a
+                href={BARBER_LOCATION_MAPS}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-2 text-[10px] text-[#c9a84c] hover:text-[#f0d080] transition-colors group"
+              >
+                <svg className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5z"/>
+                </svg>
+                <span className="font-semibold">{lang === "ar" ? BARBER_LOCATION_AR : BARBER_LOCATION_EN}</span>
+              </a>
             </div>
 
             {/* Action buttons */}
