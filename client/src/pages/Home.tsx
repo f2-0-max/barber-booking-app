@@ -19,9 +19,9 @@ const BARBER_NAME = "Ali";
 const BARBER_NAME_AR = "علي";
 const BARBER_PHONE = "0558394644";
 const BARBER_PHONE_DISPLAY = "055 839 4644";
-const BARBER_LOCATION_AR = "مدينة الرياض";
-const BARBER_LOCATION_EN = "Riyadh";
-const BARBER_LOCATION_MAPS = "https://maps.google.com/?q=Riyadh";
+const BARBER_LOCATION_AR = "مدينة تبوك";
+const BARBER_LOCATION_EN = "Tabuk";
+const BARBER_LOCATION_MAPS = "https://maps.app.goo.gl/6sQ5Q2CQmnShikXh6?g_st=ic";
 
 // Hourly slots: 10:00 → 23:00
 function generateTimeSlots(): string[] {
