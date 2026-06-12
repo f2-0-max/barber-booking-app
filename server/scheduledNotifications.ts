@@ -23,10 +23,15 @@ export async function appointmentReminderHandler(req: Request, res: Response) {
       const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
       const displayTime = `${displayH}:${String(m).padStart(2, "0")} ${period}`;
 
+      // Notify owner via Manus notification system
       await notifyOwner({
         title: `⏰ موعد قادم — ${appt.customerName}`,
         content: `حان موعد ${appt.customerName} الساعة ${displayTime}\nرقم الجوال: ${appt.phoneNumber}`,
       });
+
+      // WhatsApp notification message
+      const whatsappMsg = `🔔 موعد قادم!\n\n👤 ${appt.customerName}\n📱 ${appt.phoneNumber}\n⏰ ${displayTime}\n\nتأكد من الحضور في الموعد المحدد.`;
+      console.log(`[WhatsApp] Reminder for ${appt.customerName}: ${whatsappMsg}`);
 
       await markAppointmentNotified(appt.id);
       notifiedCount++;

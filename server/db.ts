@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { appointments, InsertAppointment, InsertUser, users } from "../drizzle/schema";
+import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -101,4 +101,25 @@ export async function markAppointmentNotified(id: number) {
   const db = await getDb();
   if (!db) return;
   await db.update(appointments).set({ notified: 1 }).where(eq(appointments.id, id));
+}
+
+// ─── Review Helpers ───────────────────────────────────────────────────────
+
+export async function createReview(data: InsertReview) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(reviews).values(data).$returningId();
+  return result;
+}
+
+export async function getReviewsByAppointment(appointmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reviews).where(eq(reviews.appointmentId, appointmentId));
+}
+
+export async function getAllReviews() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reviews).orderBy(sql`${reviews.createdAt} DESC`);
 }

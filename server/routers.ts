@@ -9,6 +9,8 @@ import {
   createAppointment,
   deleteAppointment,
   getAppointmentsByDate,
+  createReview,
+  getAllReviews,
 } from "./db";
 
 export const appRouter = router({
@@ -59,6 +61,29 @@ export const appRouter = router({
         await deleteAppointment(input.id);
         return { success: true };
       }),
+  }),
+
+  reviews: router({
+    // Create a new review
+    create: publicProcedure
+      .input(z.object({
+        appointmentId: z.number(),
+        rating: z.number().min(1).max(5),
+        comment: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await createReview({
+          appointmentId: input.appointmentId,
+          rating: input.rating,
+          comment: input.comment || null,
+        });
+        return result;
+      }),
+
+    // Get all reviews
+    getAll: publicProcedure.query(async () => {
+      return getAllReviews();
+    }),
   }),
 });
 

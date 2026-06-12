@@ -644,6 +644,21 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Reviews Section */}
+      <section className="px-4 py-8 border-t border-white/5">
+        <div className="flex items-center gap-2 mb-6">
+          <Sparkles className="w-5 h-5 text-[#c9a84c]" />
+          <h2 className="text-lg font-bold text-white">
+            {lang === "ar" ? "تقييمات العملاء" : "Müşteri Yorumları"}
+          </h2>
+        </div>
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          <p className="text-center text-gray-500 text-sm py-8">
+            {lang === "ar" ? "لا توجد تقييمات حتى الآن" : "Henüz yorum yok"}
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

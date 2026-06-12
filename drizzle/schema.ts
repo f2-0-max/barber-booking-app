@@ -28,3 +28,15 @@ export const appointments = mysqlTable("appointments", {
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = typeof appointments.$inferInsert;
+
+// Reviews table
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  appointmentId: int("appointmentId").notNull(),
+  rating: int("rating").notNull(), // 1-5 stars
+  comment: text("comment"), // Optional comment
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
