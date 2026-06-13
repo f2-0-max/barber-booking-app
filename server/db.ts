@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview } from "../drizzle/schema";
+import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -122,4 +122,71 @@ export async function getAllReviews() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(reviews).orderBy(sql`${reviews.createdAt} DESC`);
+}
+
+// ─── Phone Number Tracking ───────────────────────────────────────────────────
+
+export async function trackPhoneNumber(phoneNumber: string, date: string) {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const existing = await db.select().from(phoneNumbers)
+      .where(eq(phoneNumbers.phoneNumber, phoneNumber))
+      .limit(1);
+    
+    if (existing.length > 0) {
+      await db.update(phoneNumbers)
+        .set({
+          bookingCount: existing[0].bookingCount + 1,
+          lastBookingDate: new Date(date),
+        })
+        .where(eq(phoneNumbers.phoneNumber, phoneNumber));
+    } else {
+      await db.insert(phoneNumbers).values({
+        phoneNumber,
+        bookingCount: 1,
+        lastBookingDate: new Date(date),
+      });
+    }
+  } catch (error) {
+    console.error("[trackPhoneNumber] Error:", error);
+  }
+}
+
+export async function getPhoneNumberStats(phoneNumber: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(phoneNumbers)
+    .where(eq(phoneNumbers.phoneNumber, phoneNumber))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+// ─── Statistics ──────────────────────────────────────────────────────────────
+
+export async function getStatistics() {
+  const db = await getDb();
+  if (!db) return { totalAppointments: 0, averageRating: 0, totalReviews: 0 };
+  
+  const appointmentCount = await db.select({ count: sql<number>`COUNT(*)` })
+    .from(appointments);
+  
+  const reviewStats = await db.select({ 
+    count: sql<number>`COUNT(*)`,
+    avgRating: sql<number>`AVG(${reviews.rating})` 
+  }).from(reviews);
+  
+  return {
+    totalAppointments: appointmentCount[0]?.count || 0,
+    totalReviews: reviewStats[0]?.count || 0,
+    averageRating: reviewStats[0]?.avgRating ? parseFloat(reviewStats[0].avgRating.toFixed(1)) : 0,
+  };
+}
+
+export async function getTopPhoneNumbers(limit: number = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(phoneNumbers)
+    .orderBy(sql`${phoneNumbers.bookingCount} DESC`)
+    .limit(limit);
 }

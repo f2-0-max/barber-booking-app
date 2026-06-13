@@ -18,6 +18,12 @@ vi.mock("./db", () => ({
   createAppointment: vi.fn().mockResolvedValue({ id: 2 }),
   deleteAppointment: vi.fn().mockResolvedValue(undefined),
   checkSlotAvailable: vi.fn().mockResolvedValue(true),
+  trackPhoneNumber: vi.fn().mockResolvedValue(undefined),
+  getStatistics: vi.fn().mockResolvedValue({ totalAppointments: 0, totalReviews: 0, averageRating: 0 }),
+  getPhoneNumberStats: vi.fn().mockResolvedValue(null),
+  getTopPhoneNumbers: vi.fn().mockResolvedValue([]),
+  createReview: vi.fn().mockResolvedValue({ id: 1 }),
+  getAllReviews: vi.fn().mockResolvedValue([]),
 }));
 
 function createPublicContext(): TrpcContext {

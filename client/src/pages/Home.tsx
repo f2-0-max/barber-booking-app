@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { Star, BarChart } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -96,6 +97,12 @@ function formatDateTR(date: Date): string {
   return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+function maskPhoneNumber(phone: string): string {
+  // Show first 4 digits, mask last 5
+  if (phone.length <= 4) return phone;
+  return phone.slice(0, 4) + "•••••";
+}
+
 type Appointment = {
   id: number;
   customerName: string;
@@ -125,6 +132,8 @@ export default function Home() {
     { date: dateStr },
     { refetchOnWindowFocus: true }
   );
+
+  const { data: stats } = trpc.statistics.getStats.useQuery();
 
   const bookedMap = useMemo(() => {
     const map: Record<string, Appointment> = {};
@@ -198,6 +207,7 @@ export default function Home() {
 
   const bookedCount = Object.keys(bookedMap).length;
   const totalSlots = TIME_SLOTS.length;
+  const occupancyRate = totalSlots > 0 ? Math.round((bookedCount / totalSlots) * 100) : 0;
   const dir = isRTL ? "rtl" : "ltr";
 
   return (
@@ -439,7 +449,7 @@ export default function Home() {
                         <p className="text-sm font-bold text-white truncate leading-tight">{appt.customerName}</p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Phone className="w-3 h-3 text-[#c9a84c]/60 shrink-0" />
-                          <p className="text-xs text-gray-400 font-mono">{appt.phoneNumber}</p>
+                          <p className="text-xs text-gray-400 font-mono">{maskPhoneNumber(appt.phoneNumber)}</p>
                         </div>
                       </div>
                     ) : (
@@ -644,6 +654,33 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Statistics Dashboard */}
+      <section className="px-4 py-8 border-t border-white/5">
+        <div className="flex items-center gap-2 mb-6">
+          <BarChart className="w-5 h-5 text-[#c9a84c]" />
+          <h2 className="text-lg font-bold text-white">
+            {lang === "ar" ? "إحصائيات اليوم" : "Bugünün İstatistikleri"}
+          </h2>
+        </div>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-gradient-to-br from-[#1a1500] to-[#0f0e00] rounded-2xl border border-[#c9a84c]/20 p-4 text-center">
+            <p className="text-2xl font-black text-[#c9a84c]">{bookedCount}</p>
+            <p className="text-[10px] text-gray-500 mt-1">{lang === "ar" ? "مواعيد" : "Randevu"}</p>
+          </div>
+          <div className="bg-gradient-to-br from-[#1a1500] to-[#0f0e00] rounded-2xl border border-[#c9a84c]/20 p-4 text-center">
+            <p className="text-2xl font-black text-[#c9a84c]">{occupancyRate}%</p>
+            <p className="text-[10px] text-gray-500 mt-1">{lang === "ar" ? "الإشغال" : "Doluluk"}</p>
+          </div>
+          <div className="bg-gradient-to-br from-[#1a1500] to-[#0f0e00] rounded-2xl border border-[#c9a84c]/20 p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              <p className="text-2xl font-black text-[#c9a84c]">{stats?.averageRating.toFixed(1) || "0"}</p>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-1">{lang === "ar" ? "التقييم" : "Puan"}</p>
+          </div>
+        </div>
+      </section>
 
       {/* Reviews Section */}
       <section className="px-4 py-8 border-t border-white/5">

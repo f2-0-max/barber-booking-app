@@ -11,6 +11,10 @@ import {
   getAppointmentsByDate,
   createReview,
   getAllReviews,
+  getStatistics,
+  getPhoneNumberStats,
+  trackPhoneNumber,
+  getTopPhoneNumbers,
 } from "./db";
 
 export const appRouter = router({
@@ -51,6 +55,8 @@ export const appRouter = router({
           appointmentDate: input.appointmentDate as unknown as Date,
           timeSlot: input.timeSlot,
         });
+        // Track phone number
+        await trackPhoneNumber(input.phoneNumber, input.appointmentDate);
         return result;
       }),
 
@@ -84,6 +90,27 @@ export const appRouter = router({
     getAll: publicProcedure.query(async () => {
       return getAllReviews();
     }),
+  }),
+
+  statistics: router({
+    // Get general statistics
+    getStats: publicProcedure.query(async () => {
+      return getStatistics();
+    }),
+
+    // Get phone number booking count
+    getPhoneStats: publicProcedure
+      .input(z.object({ phoneNumber: z.string() }))
+      .query(async ({ input }) => {
+        return getPhoneNumberStats(input.phoneNumber);
+      }),
+
+    // Get top repeated phone numbers
+    getTopPhones: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getTopPhoneNumbers(input.limit || 5);
+      }),
   }),
 });
 

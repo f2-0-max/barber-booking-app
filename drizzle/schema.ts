@@ -40,3 +40,16 @@ export const reviews = mysqlTable("reviews", {
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
+
+// Phone number tracking table
+export const phoneNumbers = mysqlTable("phoneNumbers", {
+  id: int("id").autoincrement().primaryKey(),
+  phoneNumber: varchar("phoneNumber", { length: 20 }).notNull().unique(),
+  bookingCount: int("bookingCount").default(0).notNull(),
+  lastBookingDate: date("lastBookingDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PhoneNumber = typeof phoneNumbers.$inferSelect;
+export type InsertPhoneNumber = typeof phoneNumbers.$inferInsert;
