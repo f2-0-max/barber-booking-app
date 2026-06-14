@@ -696,6 +696,40 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      {/* Footer with Signature */}
+      <footer className="px-4 py-12 border-t border-white/5 bg-gradient-to-b from-transparent to-[#0a0a0a]/50">
+        <div className="flex flex-col items-center justify-center space-y-6">
+          {/* Signature Image */}
+          <div className="flex justify-center">
+            <img
+              src="/manus-storage/signature_a1b2c3d4.png"
+              alt="Faris alKaldi Signature"
+              className="h-32 object-contain opacity-90 hover:opacity-100 transition-opacity"
+            />
+          </div>
+
+          {/* Copyright Text */}
+          <div className="text-center space-y-2">
+            <p className="text-xs text-gray-500 tracking-widest uppercase">
+              {lang === "ar" ? "تطبيق حجوزات احترافي" : "Profesyonel Randevu Uygulaması"}
+            </p>
+            <p className="text-[10px] text-gray-600">
+              {lang === "ar"
+                ? `© ${new Date().getFullYear()} حجوزات علي. جميع الحقوق محفوظة.`
+                : `© ${new Date().getFullYear()} Ali's Barbershop. Tüm hakları saklıdır.`}
+            </p>
+            <p className="text-[9px] text-gray-700 mt-3">
+              {lang === "ar"
+                ? "تم بناء هذا التطبيق بواسطة Manus AI"
+                : "Manus AI tarafından geliştirilmiştir"}
+            </p>
+          </div>
+
+          {/* Decorative Line */}
+          <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/30 to-transparent" />
+        </div>
+      </footer>
     </div>
   );
 }
