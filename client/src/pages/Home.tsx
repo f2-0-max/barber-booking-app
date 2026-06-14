@@ -212,6 +212,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#080808] text-white" dir={dir}>
+      {/* SEO Hidden Keywords */}
+      <div className="sr-only">
+        <p>حجز موعد حلاق علي في تبوك - تطبيق حجوزات أونلاين احترافي. احجز موعدك مع حلاق علي الآن. خدمات حلاقة فاخرة وحجوزات سهلة وآمنة.</p>
+      </div>
 
       {/* ── HERO BANNER ── */}
       <div className="relative w-full overflow-hidden" style={{ height: "52vw", maxHeight: 280, minHeight: 180 }}>
@@ -247,6 +251,9 @@ export default function Home() {
             {t("appName", lang)}
           </h1>
           <p className="text-xs text-gray-300 mt-0.5">{t("subtitle", lang)}</p>
+          <p className="text-[10px] text-gray-400 mt-2">
+            {lang === "ar" ? "حجوزات أونلاين سهلة - حلاقة احترافية في تبوك" : "Kolay Çevrimiçi Rezervasyonlar - Tabuk'ta Profesyonel Berberlik"}
+          </p>
         </div>
       </div>
 
