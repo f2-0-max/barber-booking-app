@@ -703,7 +703,7 @@ export default function Home() {
           {/* Signature Image */}
           <div className="flex justify-center">
             <img
-              src="/manus-storage/signature_a1b2c3d4.png"
+              src="/manus-storage/signature_5ebcf729.png"
               alt="Faris alKaldi Signature"
               className="h-32 object-contain opacity-90 hover:opacity-100 transition-opacity"
             />
