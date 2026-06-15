@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber } from "../drizzle/schema";
+import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber, AppointmentStatus } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -58,6 +58,39 @@ export async function getAppointmentsByDate(date: string) {
   return db.select().from(appointments).where(sql`${appointments.appointmentDate} = ${date}`);
 }
 
+// Get confirmed appointments only (for display to customers)
+export async function getConfirmedAppointmentsByDate(date: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(appointments)
+    .where(and(sql`${appointments.appointmentDate} = ${date}`, eq(appointments.status, 'confirmed')));
+}
+
+// Get all appointments including pending (for barber dashboard)
+export async function getAllAppointmentsByDate(date: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(appointments)
+    .where(sql`${appointments.appointmentDate} = ${date}`)
+    .orderBy(appointments.timeSlot);
+}
+
+// Get pending appointments only
+export async function getPendingAppointments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(appointments)
+    .where(eq(appointments.status, 'pending'))
+    .orderBy(sql`${appointments.createdAt} DESC`);
+}
+
+// Update appointment status
+export async function updateAppointmentStatus(id: number, status: AppointmentStatus) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(appointments).set({ status }).where(eq(appointments.id, id));
+}
+
 export async function createAppointment(data: InsertAppointment) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -92,7 +125,7 @@ export async function checkSlotAvailable(date: string, timeSlot: string): Promis
   const db = await getDb();
   if (!db) return true;
   const existing = await db.select().from(appointments)
-    .where(and(sql`${appointments.appointmentDate} = ${date}`, eq(appointments.timeSlot, timeSlot)))
+    .where(and(sql`${appointments.appointmentDate} = ${date}`, eq(appointments.timeSlot, timeSlot), eq(appointments.status, 'confirmed')))
     .limit(1);
   return existing.length === 0;
 }

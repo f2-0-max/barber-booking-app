@@ -1,20 +1,25 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
 // Mock db functions
 vi.mock("./db", () => ({
-  getAppointmentsByDate: vi.fn().mockResolvedValue([
+  getAppointmentsByDate: vi.fn().mockResolvedValue([]),
+  getConfirmedAppointmentsByDate: vi.fn().mockResolvedValue([
     {
       id: 1,
       customerName: "أحمد محمد",
       phoneNumber: "0501234567",
       appointmentDate: "2026-06-11",
       timeSlot: "10:00",
+      status: "confirmed",
       notified: 0,
       createdAt: new Date(),
     },
   ]),
+  getAllAppointmentsByDate: vi.fn().mockResolvedValue([]),
+  getPendingAppointments: vi.fn().mockResolvedValue([]),
+  updateAppointmentStatus: vi.fn().mockResolvedValue(undefined),
   createAppointment: vi.fn().mockResolvedValue({ id: 2 }),
   deleteAppointment: vi.fn().mockResolvedValue(undefined),
   checkSlotAvailable: vi.fn().mockResolvedValue(true),
@@ -36,13 +41,13 @@ function createPublicContext(): TrpcContext {
   };
 }
 
-describe("appointments.getByDate", () => {
-  it("returns appointments for a given date", async () => {
+describe("appointments.getConfirmedByDate", () => {
+  it("returns confirmed appointments for a given date", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
-    const result = await caller.appointments.getByDate({ date: "2026-06-11" });
+    const result = await caller.appointments.getConfirmedByDate({ date: "2026-06-11" });
     expect(Array.isArray(result)).toBe(true);
-    expect(result[0]).toMatchObject({ customerName: "أحمد محمد", timeSlot: "10:00" });
+    expect(result[0]).toMatchObject({ customerName: "أحمد محمد", timeSlot: "10:00", status: "confirmed" });
   });
 });
 
@@ -54,7 +59,7 @@ describe("appointments.create", () => {
       customerName: "سالم العمري",
       phoneNumber: "0559876543",
       appointmentDate: "2026-06-11",
-      timeSlot: "14:30",
+      timeSlot: "14:00",
     });
     expect(result).toMatchObject({ id: 2 });
   });
@@ -67,7 +72,7 @@ describe("appointments.create", () => {
         customerName: "",
         phoneNumber: "0559876543",
         appointmentDate: "2026-06-11",
-        timeSlot: "14:30",
+        timeSlot: "14:00",
       })
     ).rejects.toThrow();
   });
@@ -79,18 +84,45 @@ describe("appointments.create", () => {
       caller.appointments.create({
         customerName: "سالم",
         phoneNumber: "0559876543",
-        appointmentDate: "11-06-2026",
-        timeSlot: "14:30",
+        appointmentDate: "invalid-date",
+        timeSlot: "14:00",
       })
     ).rejects.toThrow();
   });
 });
 
 describe("appointments.delete", () => {
-  it("deletes an appointment by id", async () => {
+  it("deletes an appointment", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.appointments.delete({ id: 1 });
-    expect(result).toEqual({ success: true });
+    expect(result).toMatchObject({ success: true });
+  });
+});
+
+describe("appointments.approve", () => {
+  it("approves a pending appointment", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.appointments.approve({ id: 1 });
+    expect(result).toMatchObject({ success: true });
+  });
+});
+
+describe("appointments.reject", () => {
+  it("rejects a pending appointment", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.appointments.reject({ id: 1 });
+    expect(result).toMatchObject({ success: true });
+  });
+});
+
+describe("appointments.getPending", () => {
+  it("returns pending appointments", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.appointments.getPending();
+    expect(Array.isArray(result)).toBe(true);
   });
 });

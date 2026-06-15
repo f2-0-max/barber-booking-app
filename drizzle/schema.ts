@@ -22,12 +22,14 @@ export const appointments = mysqlTable("appointments", {
   phoneNumber: varchar("phoneNumber", { length: 20 }).notNull(),
   appointmentDate: date("appointmentDate").notNull(),   // YYYY-MM-DD
   timeSlot: varchar("timeSlot", { length: 5 }).notNull(), // HH:MM (24h)
+  status: mysqlEnum("status", ["pending", "confirmed", "rejected"]).default("pending").notNull(), // pending = waiting for barber approval
   notified: int("notified").default(0).notNull(),        // 0 = not notified, 1 = notified
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = typeof appointments.$inferInsert;
+export type AppointmentStatus = "pending" | "confirmed" | "rejected";
 
 // Reviews table
 export const reviews = mysqlTable("reviews", {

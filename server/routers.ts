@@ -9,6 +9,10 @@ import {
   createAppointment,
   deleteAppointment,
   getAppointmentsByDate,
+  getConfirmedAppointmentsByDate,
+  getAllAppointmentsByDate,
+  getPendingAppointments,
+  updateAppointmentStatus,
   createReview,
   getAllReviews,
   getStatistics,
@@ -29,14 +33,49 @@ export const appRouter = router({
   }),
 
   appointments: router({
-    // Get all appointments for a given date (YYYY-MM-DD)
+    // Get confirmed appointments only (for customers)
+    getConfirmedByDate: publicProcedure
+      .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
+      .query(async ({ input }) => {
+        return getConfirmedAppointmentsByDate(input.date);
+      }),
+
+    // Get all appointments including pending (for barber dashboard)
+    getAllByDate: publicProcedure
+      .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
+      .query(async ({ input }) => {
+        return getAllAppointmentsByDate(input.date);
+      }),
+
+    // Get pending appointments (for barber notifications)
+    getPending: publicProcedure.query(async () => {
+      return getPendingAppointments();
+    }),
+
+    // Approve appointment (barber only)
+    approve: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateAppointmentStatus(input.id, 'confirmed');
+        return { success: true };
+      }),
+
+    // Reject appointment (barber only)
+    reject: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateAppointmentStatus(input.id, 'rejected');
+        return { success: true };
+      }),
+
+    // Get all appointments for a given date (YYYY-MM-DD) - backward compatibility
     getByDate: publicProcedure
       .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
       .query(async ({ input }) => {
-        return getAppointmentsByDate(input.date);
+        return getConfirmedAppointmentsByDate(input.date);
       }),
 
-    // Create a new appointment
+    // Create a new appointment (starts as pending)
     create: publicProcedure
       .input(z.object({
         customerName: z.string().min(1).max(255),
@@ -54,6 +93,7 @@ export const appRouter = router({
           phoneNumber: input.phoneNumber,
           appointmentDate: input.appointmentDate as unknown as Date,
           timeSlot: input.timeSlot,
+          status: 'pending',
         });
         // Track phone number
         await trackPhoneNumber(input.phoneNumber, input.appointmentDate);

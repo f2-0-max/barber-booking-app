@@ -109,6 +109,7 @@ type Appointment = {
   phoneNumber: string;
   appointmentDate: string | Date;
   timeSlot: string;
+  status?: 'pending' | 'confirmed' | 'rejected';
   notified: number;
   createdAt: Date;
 };
@@ -128,9 +129,14 @@ export default function Home() {
   const isRTL = lang === "ar";
   const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-  const { data: appointments = [], refetch } = trpc.appointments.getByDate.useQuery(
+  const { data: appointments = [], refetch } = trpc.appointments.getConfirmedByDate.useQuery(
     { date: dateStr },
     { refetchOnWindowFocus: true }
+  );
+
+  const { data: pendingAppointments = [] } = trpc.appointments.getPending.useQuery(
+    undefined,
+    { refetchOnWindowFocus: true, refetchInterval: 5000 }
   );
 
   const { data: stats } = trpc.statistics.getStats.useQuery();
@@ -159,6 +165,22 @@ export default function Home() {
       toast.success(t("successDel", lang));
     },
     onError: () => toast.error(t("errDel", lang)),
+  });
+
+  const approveMutation = trpc.appointments.approve.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success(lang === 'ar' ? 'تم قبول الحجز' : 'Randevu onaylandı');
+    },
+    onError: () => toast.error(lang === 'ar' ? 'خطأ في قبول الحجز' : 'Onay hatası'),
+  });
+
+  const rejectMutation = trpc.appointments.reject.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success(lang === 'ar' ? 'تم رفض الحجز' : 'Randevu reddedildi');
+    },
+    onError: () => toast.error(lang === 'ar' ? 'خطأ في رفض الحجز' : 'Red hatası'),
   });
 
   const handleBook = async () => {
@@ -661,6 +683,50 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── PENDING APPOINTMENTS PANEL (Barber Dashboard) ── */}
+      {pendingAppointments.length > 0 && (
+        <section className="px-4 py-8 border-t border-yellow-500/20 bg-yellow-500/5">
+          <div className="flex items-center gap-2 mb-6">
+            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+            <h2 className="text-lg font-bold text-white">
+              {lang === "ar" ? `حجوزات معلقة (${pendingAppointments.length})` : `Beklemede Randevular (${pendingAppointments.length})`}
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {(pendingAppointments as Appointment[]).map((appt) => (
+              <div key={appt.id} className="bg-[#1a1500]/50 border border-yellow-500/30 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-sm font-bold text-white">{appt.customerName}</p>
+                    <p className="text-xs text-gray-400 mt-1 font-mono">{appt.phoneNumber}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-black text-[#c9a84c]">{appt.timeSlot}</p>
+                    <p className="text-[9px] text-gray-500 mt-1">{lang === "ar" ? format(new Date(appt.appointmentDate), "d MMM", { locale: ar }) : format(new Date(appt.appointmentDate), "d MMM")}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => approveMutation.mutateAsync({ id: appt.id })}
+                    disabled={approveMutation.isPending}
+                    className="flex-1 h-9 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs"
+                  >
+                    {approveMutation.isPending ? "..." : (lang === "ar" ? "قبول" : "Onayla")}
+                  </Button>
+                  <Button
+                    onClick={() => rejectMutation.mutateAsync({ id: appt.id })}
+                    disabled={rejectMutation.isPending}
+                    className="flex-1 h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs"
+                  >
+                    {rejectMutation.isPending ? "..." : (lang === "ar" ? "رفض" : "Reddet")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Statistics Dashboard */}
       <section className="px-4 py-8 border-t border-white/5">
