@@ -55,3 +55,43 @@ export const phoneNumbers = mysqlTable("phoneNumbers", {
 
 export type PhoneNumber = typeof phoneNumbers.$inferSelect;
 export type InsertPhoneNumber = typeof phoneNumbers.$inferInsert;
+
+// Members table (customers who register with phone number)
+export const members = mysqlTable("members", {
+  id: int("id").autoincrement().primaryKey(),
+  phoneNumber: varchar("phoneNumber", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  role: mysqlEnum("role", ["member", "supervisor", "admin"]).default("member").notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "blocked"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Member = typeof members.$inferSelect;
+export type InsertMember = typeof members.$inferInsert;
+
+// OTP codes table
+export const otpCodes = mysqlTable("otpCodes", {
+  id: int("id").autoincrement().primaryKey(),
+  phoneNumber: varchar("phoneNumber", { length: 20 }).notNull(),
+  code: varchar("code", { length: 6 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  attempts: int("attempts").default(0).notNull(),
+  verified: int("verified").default(0).notNull(), // 0 = not verified, 1 = verified
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OtpCode = typeof otpCodes.$inferSelect;
+export type InsertOtpCode = typeof otpCodes.$inferInsert;
+
+// Supervisors table (barber + staff with approval permissions)
+export const supervisors = mysqlTable("supervisors", {
+  id: int("id").autoincrement().primaryKey(),
+  memberId: int("memberId").notNull(),
+  addedBy: int("addedBy").notNull(), // admin who added this supervisor
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Supervisor = typeof supervisors.$inferSelect;
+export type InsertSupervisor = typeof supervisors.$inferInsert;

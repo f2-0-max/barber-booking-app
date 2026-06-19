@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber, AppointmentStatus } from "../drizzle/schema";
+import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber, AppointmentStatus, members, InsertMember, otpCodes, InsertOtpCode, supervisors, InsertSupervisor } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -222,4 +222,149 @@ export async function getTopPhoneNumbers(limit: number = 5) {
   return db.select().from(phoneNumbers)
     .orderBy(sql`${phoneNumbers.bookingCount} DESC`)
     .limit(limit);
+}
+
+
+// ─── Member Registration & OTP ───────────────────────────────────────────────
+
+export async function generateOTP(phoneNumber: string): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  
+  // Delete old OTP codes for this phone number
+  await db.delete(otpCodes).where(eq(otpCodes.phoneNumber, phoneNumber));
+  
+  // Insert new OTP code
+  await db.insert(otpCodes).values({
+    phoneNumber,
+    code,
+    expiresAt,
+    attempts: 0,
+    verified: 0,
+  });
+  
+  return code;
+}
+
+export async function verifyOTP(phoneNumber: string, code: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(otpCodes)
+    .where(and(
+      eq(otpCodes.phoneNumber, phoneNumber),
+      eq(otpCodes.code, code)
+    ))
+    .limit(1);
+  
+  if (result.length === 0) return false;
+  
+  const otp = result[0];
+  if (!otp || otp.expiresAt < new Date()) return false;
+  if (otp.attempts >= 3) return false;
+  
+  // Mark as verified
+  await db.update(otpCodes)
+    .set({ verified: 1 })
+    .where(eq(otpCodes.id, otp.id));
+  
+  return true;
+}
+
+export async function registerMember(phoneNumber: string, name: string, email?: string): Promise<InsertMember> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(members).values({
+    phoneNumber,
+    name,
+    email,
+    role: "member",
+    status: "active",
+  });
+  
+  return { phoneNumber, name, email, role: "member", status: "active" };
+}
+
+export async function getMemberByPhone(phoneNumber: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(members)
+    .where(eq(members.phoneNumber, phoneNumber))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getMemberById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(members)
+    .where(eq(members.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+// ─── Supervisors Management ──────────────────────────────────────────────────
+
+export async function addSupervisor(memberId: number, addedBy: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Update member role to supervisor
+  await db.update(members)
+    .set({ role: "supervisor" })
+    .where(eq(members.id, memberId));
+  
+  // Add to supervisors table
+  await db.insert(supervisors).values({
+    memberId,
+    addedBy,
+  });
+}
+
+export async function removeSupervisor(memberId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Update member role back to member
+  await db.update(members)
+    .set({ role: "member" })
+    .where(eq(members.id, memberId));
+  
+  // Remove from supervisors table
+  await db.delete(supervisors)
+    .where(eq(supervisors.memberId, memberId));
+}
+
+export async function getSupervisors() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select({
+    id: supervisors.id,
+    memberId: supervisors.memberId,
+    phoneNumber: members.phoneNumber,
+    name: members.name,
+    createdAt: supervisors.createdAt,
+  })
+  .from(supervisors)
+  .innerJoin(members, eq(supervisors.memberId, members.id));
+}
+
+export async function isSupervisor(memberId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const result = await db.select().from(supervisors)
+    .where(eq(supervisors.memberId, memberId))
+    .limit(1);
+  
+  return result.length > 0;
 }

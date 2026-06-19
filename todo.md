@@ -39,3 +39,16 @@
 - [x] Fix reminder window to exactly 15 min (currently 20 min)
 - [x] Add confirmation dialog before deleting an appointment
 - [x] Add real date picker (calendar popup) alongside day navigation
+
+
+## Member Registration & Roles System
+- [ ] Create `members` table (id, phoneNumber, name, email, role, status, createdAt)
+- [ ] Create `otp_codes` table (id, phoneNumber, code, expiresAt, attempts)
+- [ ] Create `supervisors` table (id, memberId, addedBy, createdAt)
+- [ ] Add DB helpers for OTP generation, verification, member creation
+- [ ] Add tRPC procedures: requestOTP, verifyOTP, registerMember, getSupervisors, addSupervisor, removeSupervisor
+- [ ] Build registration form with phone number + OTP verification
+- [ ] Build admin dashboard to manage supervisors
+- [ ] Update appointment creation to track member ID
+- [ ] Update appointment approval/rejection to show supervisor name
+- [ ] Write vitest for OTP and member registration

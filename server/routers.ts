@@ -19,6 +19,15 @@ import {
   getPhoneNumberStats,
   trackPhoneNumber,
   getTopPhoneNumbers,
+  generateOTP,
+  verifyOTP,
+  registerMember,
+  getMemberByPhone,
+  getMemberById,
+  addSupervisor,
+  removeSupervisor,
+  getSupervisors,
+  isSupervisor,
 } from "./db";
 
 export const appRouter = router({
@@ -150,6 +159,80 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().optional() }))
       .query(async ({ input }) => {
         return getTopPhoneNumbers(input.limit || 5);
+      }),
+  }),
+
+  members: router({
+    // Request OTP
+    requestOTP: publicProcedure
+      .input(z.object({ phoneNumber: z.string() }))
+      .mutation(async ({ input }) => {
+        const code = await generateOTP(input.phoneNumber);
+        console.log(`[OTP] Code for ${input.phoneNumber}: ${code}`);
+        return { success: true, message: "OTP sent to phone" };
+      }),
+
+    // Verify OTP and register
+    verifyAndRegister: publicProcedure
+      .input(z.object({
+        phoneNumber: z.string(),
+        code: z.string().length(6),
+        name: z.string().min(1),
+        email: z.string().email().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const verified = await verifyOTP(input.phoneNumber, input.code);
+        if (!verified) throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or expired OTP" });
+        
+        const existing = await getMemberByPhone(input.phoneNumber);
+        if (existing) return { success: true, memberId: existing.id, isNew: false };
+        
+        await registerMember(input.phoneNumber, input.name, input.email);
+        return { success: true, isNew: true };
+      }),
+
+    // Get member by phone
+    getByPhone: publicProcedure
+      .input(z.object({ phoneNumber: z.string() }))
+      .query(async ({ input }) => {
+        return getMemberByPhone(input.phoneNumber);
+      }),
+
+    // Get member by ID
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getMemberById(input.id);
+      }),
+  }),
+
+  supervisors: router({
+    // Get all supervisors
+    getAll: publicProcedure.query(async () => {
+      return getSupervisors();
+    }),
+
+    // Add supervisor (admin only)
+    add: publicProcedure
+      .input(z.object({ memberId: z.number() }))
+      .mutation(async ({ input }) => {
+        await addSupervisor(input.memberId, 1);
+        return { success: true };
+      }),
+
+    // Remove supervisor (admin only)
+    remove: publicProcedure
+      .input(z.object({ memberId: z.number() }))
+      .mutation(async ({ input }) => {
+        await removeSupervisor(input.memberId);
+        return { success: true };
+      }),
+
+    // Check if member is supervisor
+    isSupervisor: publicProcedure
+      .input(z.object({ memberId: z.number() }))
+      .query(async ({ input }) => {
+        return isSupervisor(input.memberId);
       }),
   }),
 });
