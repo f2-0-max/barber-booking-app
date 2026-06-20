@@ -253,6 +253,22 @@ export async function verifyOTP(phoneNumber: string, code: string): Promise<bool
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  // Find any OTP for this phone (to check attempts even if code is wrong)
+  const anyOtp = await db.select().from(otpCodes)
+    .where(eq(otpCodes.phoneNumber, phoneNumber))
+    .limit(1);
+  
+  if (anyOtp.length > 0) {
+    const otp = anyOtp[0];
+    // Check if already verified (single-use)
+    if (otp.verified === 1) return false;
+    // Check if max attempts reached
+    if (otp.attempts >= 3) return false;
+    // Check if expired
+    if (otp.expiresAt < new Date()) return false;
+  }
+  
+  // Find the correct code
   const result = await db.select().from(otpCodes)
     .where(and(
       eq(otpCodes.phoneNumber, phoneNumber),
@@ -260,14 +276,18 @@ export async function verifyOTP(phoneNumber: string, code: string): Promise<bool
     ))
     .limit(1);
   
-  if (result.length === 0) return false;
+  if (result.length === 0) {
+    // Code is wrong - increment attempts
+    if (anyOtp.length > 0) {
+      await db.update(otpCodes)
+        .set({ attempts: anyOtp[0].attempts + 1 })
+        .where(eq(otpCodes.id, anyOtp[0].id));
+    }
+    return false;
+  }
   
   const otp = result[0];
-  if (!otp || otp.expiresAt < new Date()) return false;
-  if (otp.attempts >= 3) return false;
-  if (otp.verified === 1) return false; // Already verified, single-use only
-  
-  // Increment attempts and mark as verified
+  // Code is correct - mark as verified
   await db.update(otpCodes)
     .set({ verified: 1, attempts: otp.attempts + 1 })
     .where(eq(otpCodes.id, otp.id));

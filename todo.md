@@ -55,8 +55,8 @@
 
 
 ## Security & Improvements
-- [ ] Fix OTP verification to increment attempts and reject reused codes
-- [ ] Secure supervisor management with admin-only authorization
+- [x] Fix OTP verification to increment attempts and reject reused codes
+- [x] Secure supervisor management with admin-only authorization
 - [ ] Add real OTP delivery mechanism (SMS/WhatsApp)
 - [ ] Build registration form UI with OTP verification flow
 - [ ] Build admin dashboard for supervisor management
