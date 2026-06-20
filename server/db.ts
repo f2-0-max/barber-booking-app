@@ -265,10 +265,11 @@ export async function verifyOTP(phoneNumber: string, code: string): Promise<bool
   const otp = result[0];
   if (!otp || otp.expiresAt < new Date()) return false;
   if (otp.attempts >= 3) return false;
+  if (otp.verified === 1) return false; // Already verified, single-use only
   
-  // Mark as verified
+  // Increment attempts and mark as verified
   await db.update(otpCodes)
-    .set({ verified: 1 })
+    .set({ verified: 1, attempts: otp.attempts + 1 })
     .where(eq(otpCodes.id, otp.id));
   
   return true;

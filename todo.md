@@ -42,13 +42,22 @@
 
 
 ## Member Registration & Roles System
-- [ ] Create `members` table (id, phoneNumber, name, email, role, status, createdAt)
-- [ ] Create `otp_codes` table (id, phoneNumber, code, expiresAt, attempts)
-- [ ] Create `supervisors` table (id, memberId, addedBy, createdAt)
-- [ ] Add DB helpers for OTP generation, verification, member creation
-- [ ] Add tRPC procedures: requestOTP, verifyOTP, registerMember, getSupervisors, addSupervisor, removeSupervisor
+- [x] Create `members` table (id, phoneNumber, name, email, role, status, createdAt)
+- [x] Create `otp_codes` table (id, phoneNumber, code, expiresAt, attempts)
+- [x] Create `supervisors` table (id, memberId, addedBy, createdAt)
+- [x] Add DB helpers for OTP generation, verification, member creation
+- [x] Add tRPC procedures: requestOTP, verifyOTP, registerMember, getSupervisors, addSupervisor, removeSupervisor
 - [ ] Build registration form with phone number + OTP verification
 - [ ] Build admin dashboard to manage supervisors
 - [ ] Update appointment creation to track member ID
 - [ ] Update appointment approval/rejection to show supervisor name
 - [ ] Write vitest for OTP and member registration
+
+
+## Security & Improvements
+- [ ] Fix OTP verification to increment attempts and reject reused codes
+- [ ] Secure supervisor management with admin-only authorization
+- [ ] Add real OTP delivery mechanism (SMS/WhatsApp)
+- [ ] Build registration form UI with OTP verification flow
+- [ ] Build admin dashboard for supervisor management
+- [ ] Add vitest for OTP security and supervisor authorization

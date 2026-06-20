@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { ENV } from "./_core/env";
 import {
   checkSlotAvailable,
   createAppointment,
@@ -212,18 +213,24 @@ export const appRouter = router({
       return getSupervisors();
     }),
 
-    // Add supervisor (admin only)
+    // Add supervisor (admin only - owner)
     add: publicProcedure
       .input(z.object({ memberId: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.openId !== ENV.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admin can add supervisors" });
+        }
         await addSupervisor(input.memberId, 1);
         return { success: true };
       }),
 
-    // Remove supervisor (admin only)
+    // Remove supervisor (admin only - owner)
     remove: publicProcedure
       .input(z.object({ memberId: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.openId !== ENV.ownerOpenId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admin can remove supervisors" });
+        }
         await removeSupervisor(input.memberId);
         return { success: true };
       }),
