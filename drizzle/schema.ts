@@ -18,6 +18,7 @@ export type InsertUser = typeof users.$inferInsert;
 // Appointments table
 export const appointments = mysqlTable("appointments", {
   id: int("id").autoincrement().primaryKey(),
+  memberId: int("memberId"),                            // Optional: registered member ID
   customerName: varchar("customerName", { length: 255 }).notNull(),
   phoneNumber: varchar("phoneNumber", { length: 20 }).notNull(),
   appointmentDate: date("appointmentDate").notNull(),   // YYYY-MM-DD

@@ -1,0 +1,1 @@
+ALTER TABLE `appointments` ADD `memberId` int;

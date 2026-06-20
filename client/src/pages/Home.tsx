@@ -14,6 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { MemberRegistration } from "@/components/MemberRegistration";
+import { AdminDashboard } from "@/components/AdminDashboard";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const BANNER_URL = "/manus-storage/barber-banner_018cae17.jpg";
 const BARBER_NAME = "Ali";
@@ -125,6 +128,9 @@ export default function Home() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
+  const { user } = useAuth();
 
   const isRTL = lang === "ar";
   const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -277,6 +283,24 @@ export default function Home() {
             {lang === "ar" ? "حجوزات أونلاين سهلة - حلاقة احترافية في تبوك" : "Kolay Çevrimiçi Rezervasyonlar - Tabuk'ta Profesyonel Berberlik"}
           </p>
         </div>
+      </div>
+
+      {/* ── REGISTRATION & ADMIN BUTTONS ── */}
+      <div className="px-4 pt-3 pb-1 flex gap-2">
+        <Button
+          onClick={() => setRegistrationOpen(true)}
+          className="flex-1 h-10 rounded-2xl bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c] hover:bg-[#c9a84c]/20 transition-all active:scale-95 text-xs font-semibold"
+        >
+          {lang === "ar" ? "تسجيل عضوية" : "Üye Kaydı"}
+        </Button>
+        {user?.openId && import.meta.env.VITE_OWNER_OPEN_ID && user.openId === import.meta.env.VITE_OWNER_OPEN_ID && (
+          <Button
+            onClick={() => setAdminDashboardOpen(true)}
+            className="flex-1 h-10 rounded-2xl bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c] hover:bg-[#c9a84c]/20 transition-all active:scale-95 text-xs font-semibold"
+          >
+            {lang === "ar" ? "إدارة المشرفين" : "Denetçileri Yönet"}
+          </Button>
+        )}
       </div>
 
       {/* ── BARBER INFO CARD ── */}
@@ -803,6 +827,24 @@ export default function Home() {
           <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/30 to-transparent" />
         </div>
       </footer>
+
+      {/* ── MEMBER REGISTRATION DIALOG ── */}
+      <MemberRegistration
+        open={registrationOpen}
+        onOpenChange={setRegistrationOpen}
+        lang={lang}
+        onSuccess={() => {
+          refetch();
+          toast.success(lang === "ar" ? "تم التسجيل بنجاح!" : "Kayıt başarılı!");
+        }}
+      />
+
+      {/* ── ADMIN DASHBOARD DIALOG ── */}
+      <AdminDashboard
+        open={adminDashboardOpen}
+        onOpenChange={setAdminDashboardOpen}
+        lang={lang}
+      />
     </div>
   );
 }

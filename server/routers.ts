@@ -92,13 +92,26 @@ export const appRouter = router({
         phoneNumber: z.string().min(7).max(20),
         appointmentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
         timeSlot: z.string().regex(/^\d{2}:\d{2}$/),
+        memberId: z.number().optional(), // Optional: registered member ID
       }))
       .mutation(async ({ input }) => {
         const available = await checkSlotAvailable(input.appointmentDate, input.timeSlot);
         if (!available) {
           throw new TRPCError({ code: "CONFLICT", message: "هذا الوقت محجوز مسبقاً" });
         }
+        
+        // If memberId is provided, validate it exists and matches phone number
+        let finalMemberId = input.memberId;
+        if (input.memberId) {
+          const member = await getMemberById(input.memberId);
+          if (!member || member.phoneNumber !== input.phoneNumber) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Member ID does not match phone number" });
+          }
+          finalMemberId = member.id;
+        }
+        
         const result = await createAppointment({
+          memberId: finalMemberId,
           customerName: input.customerName,
           phoneNumber: input.phoneNumber,
           appointmentDate: input.appointmentDate as unknown as Date,

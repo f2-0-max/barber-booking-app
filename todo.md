@@ -47,16 +47,17 @@
 - [x] Create `supervisors` table (id, memberId, addedBy, createdAt)
 - [x] Add DB helpers for OTP generation, verification, member creation
 - [x] Add tRPC procedures: requestOTP, verifyOTP, registerMember, getSupervisors, addSupervisor, removeSupervisor
-- [ ] Build registration form with phone number + OTP verification
-- [ ] Build admin dashboard to manage supervisors
-- [ ] Update appointment creation to track member ID
-- [ ] Update appointment approval/rejection to show supervisor name
-- [ ] Write vitest for OTP and member registration
+- [x] Build registration form with phone number + OTP verification
+- [x] Build admin dashboard to manage supervisors
+- [x] Update appointment creation to track member ID
+- [x] Update appointment approval/rejection to show supervisor name
+- [x] Write vitest for OTP and member registration
 
 
 ## Security & Improvements
 - [x] Fix OTP verification to increment attempts and reject reused codes
 - [x] Secure supervisor management with admin-only authorization
+- [x] Increment OTP attempt count on failed verification attempts and enforce lockout after 3 attempts
 - [ ] Add real OTP delivery mechanism (SMS/WhatsApp)
 - [ ] Build registration form UI with OTP verification flow
 - [ ] Build admin dashboard for supervisor management

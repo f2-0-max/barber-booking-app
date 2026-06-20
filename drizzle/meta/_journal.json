@@ -43,6 +43,13 @@
       "when": 1781805034962,
       "tag": "0005_flippant_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1781974678806,
+      "tag": "0006_great_champions",
+      "breakpoints": true
     }
   ]
 }
