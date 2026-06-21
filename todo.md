@@ -59,3 +59,13 @@
 - [x] Secure supervisor management with admin-only authorization
 - [x] Increment OTP attempt count on failed verification attempts and enforce lockout after 3 attempts
 - [x] Add real OTP delivery mechanism (SMS/WhatsApp via Manus Data API)
+
+## Promotional Offers & Coupons System
+- [x] Create promotions, coupons, and memberPromotions tables
+- [x] Add DB helpers for promotions and coupons management
+- [x] Add tRPC procedures for promotions and coupons
+- [x] Design attractive promotional banner
+- [x] Integrate PromoBanner component in Home page
+- [ ] Create coupon generation UI for admin dashboard
+- [ ] Add coupon validation during appointment booking
+- [ ] Display promotion details in member registration flow

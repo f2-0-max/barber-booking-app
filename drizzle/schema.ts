@@ -1,4 +1,4 @@
-import { date, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { date, decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -96,3 +96,52 @@ export const supervisors = mysqlTable("supervisors", {
 
 export type Supervisor = typeof supervisors.$inferSelect;
 export type InsertSupervisor = typeof supervisors.$inferInsert;
+
+// Promotions/Offers table
+export const promotions = mysqlTable("promotions", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  offerType: mysqlEnum("offerType", ["free_service", "discount_percentage", "discount_amount"]).notNull(),
+  serviceType: varchar("serviceType", { length: 255 }), // e.g., "skin_care", "hair_cut", etc.
+  discountValue: decimal("discountValue", { precision: 10, scale: 2 }), // For discount_percentage or discount_amount
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  maxUsagePerUser: int("maxUsagePerUser").default(1).notNull(), // How many times one user can use this offer
+  totalUsageLimit: int("totalUsageLimit"), // Total times this offer can be used (null = unlimited)
+  currentUsageCount: int("currentUsageCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Promotion = typeof promotions.$inferSelect;
+export type InsertPromotion = typeof promotions.$inferInsert;
+
+// Coupons table
+export const coupons = mysqlTable("coupons", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  promotionId: int("promotionId").notNull(),
+  memberId: int("memberId"), // null = can be used by anyone, otherwise specific member
+  isUsed: int("isUsed").default(0).notNull(), // 0 = not used, 1 = used
+  usedAt: timestamp("usedAt"),
+  usedForAppointmentId: int("usedForAppointmentId"), // Which appointment this coupon was used for
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Coupon = typeof coupons.$inferSelect;
+export type InsertCoupon = typeof coupons.$inferInsert;
+
+// Member Promotions (track which promotions have been used by which members)
+export const memberPromotions = mysqlTable("memberPromotions", {
+  id: int("id").autoincrement().primaryKey(),
+  memberId: int("memberId").notNull(),
+  promotionId: int("promotionId").notNull(),
+  usageCount: int("usageCount").default(0).notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MemberPromotion = typeof memberPromotions.$inferSelect;
+export type InsertMemberPromotion = typeof memberPromotions.$inferInsert;

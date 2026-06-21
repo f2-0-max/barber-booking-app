@@ -50,6 +50,13 @@
       "when": 1781974678806,
       "tag": "0006_great_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1782016084054,
+      "tag": "0007_dark_ultimo",
+      "breakpoints": true
     }
   ]
 }

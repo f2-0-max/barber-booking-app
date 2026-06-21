@@ -30,6 +30,12 @@ import {
   removeSupervisor,
   getSupervisors,
   isSupervisor,
+  getActivePromotions,
+  getPromotionById,
+  createPromotion,
+  generateCoupon,
+  validateAndUseCoupon,
+  getMemberPromotionUsage,
 } from "./db";
 
 export const appRouter = router({
@@ -229,6 +235,33 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         return getMemberById(input.id);
+      }),
+  }),
+
+  promotions: router({
+    // Get all active promotions
+    getActive: publicProcedure.query(async () => {
+      return getActivePromotions();
+    }),
+
+    // Get promotion by ID
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getPromotionById(input.id);
+      }),
+  }),
+
+  coupons: router({
+    // Validate and use coupon
+    validate: publicProcedure
+      .input(z.object({
+        code: z.string(),
+        memberId: z.number(),
+        appointmentId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return validateAndUseCoupon(input.code, input.memberId, input.appointmentId);
       }),
   }),
 

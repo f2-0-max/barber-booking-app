@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber, AppointmentStatus, members, InsertMember, otpCodes, InsertOtpCode, supervisors, InsertSupervisor } from "../drizzle/schema";
+import { appointments, InsertAppointment, InsertUser, users, reviews, InsertReview, phoneNumbers, InsertPhoneNumber, AppointmentStatus, members, InsertMember, otpCodes, InsertOtpCode, supervisors, InsertSupervisor, promotions, InsertPromotion, Promotion, coupons, InsertCoupon, memberPromotions, InsertMemberPromotion } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -388,4 +388,177 @@ export async function isSupervisor(memberId: number): Promise<boolean> {
     .limit(1);
   
   return result.length > 0;
+}
+
+
+// ============ PROMOTIONS & COUPONS ============
+
+export async function getActivePromotions(): Promise<Promotion[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date();
+  const result = await db.select().from(promotions)
+    .where(and(
+      eq(promotions.isActive, 1),
+      sql`(${promotions.startDate} IS NULL OR ${promotions.startDate} <= ${now})`,
+      sql`(${promotions.endDate} IS NULL OR ${promotions.endDate} >= ${now})`
+    ));
+  
+  return result;
+}
+
+export async function getPromotionById(id: number): Promise<Promotion | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(promotions)
+    .where(eq(promotions.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createPromotion(data: InsertPromotion): Promise<Promotion> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(promotions).values(data);
+  const promotionId = result[0].insertId;
+  
+  const created = await getPromotionById(Number(promotionId));
+  if (!created) throw new Error("Failed to create promotion");
+  
+  return created;
+}
+
+export async function generateCoupon(promotionId: number, memberId?: number): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Generate unique coupon code
+  const code = `PROMO-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+  
+  await db.insert(coupons).values({
+    code,
+    promotionId,
+    memberId,
+  });
+  
+  return code;
+}
+
+export async function validateAndUseCoupon(code: string, memberId: number, appointmentId: number): Promise<{ valid: boolean; promotion?: Promotion; message: string }> {
+  const db = await getDb();
+  if (!db) return { valid: false, message: "Database not available" };
+  
+  // Find coupon
+  const couponResult = await db.select().from(coupons)
+    .where(eq(coupons.code, code))
+    .limit(1);
+  
+  if (couponResult.length === 0) {
+    return { valid: false, message: "Coupon not found" };
+  }
+  
+  const coupon = couponResult[0];
+  
+  // Check if already used
+  if (coupon.isUsed) {
+    return { valid: false, message: "Coupon already used" };
+  }
+  
+  // Check if coupon is for specific member
+  if (coupon.memberId && coupon.memberId !== memberId) {
+    return { valid: false, message: "This coupon is not valid for your account" };
+  }
+  
+  // Get promotion
+  const promotion = await getPromotionById(coupon.promotionId);
+  if (!promotion) {
+    return { valid: false, message: "Promotion not found" };
+  }
+  
+  // Check if promotion is active
+  const now = new Date();
+  if (promotion.isActive === 0) {
+    return { valid: false, message: "Promotion is not active" };
+  }
+  
+  if (promotion.startDate && promotion.startDate > now) {
+    return { valid: false, message: "Promotion has not started yet" };
+  }
+  
+  if (promotion.endDate && promotion.endDate < now) {
+    return { valid: false, message: "Promotion has expired" };
+  }
+  
+  // Check usage limits
+  if (promotion.totalUsageLimit && promotion.currentUsageCount >= promotion.totalUsageLimit) {
+    return { valid: false, message: "Promotion usage limit reached" };
+  }
+  
+  // Check member usage count
+  const memberPromoResult = await db.select().from(memberPromotions)
+    .where(and(
+      eq(memberPromotions.memberId, memberId),
+      eq(memberPromotions.promotionId, promotion.id)
+    ))
+    .limit(1);
+  
+  if (memberPromoResult.length > 0) {
+    const memberPromo = memberPromoResult[0];
+    if (memberPromo.usageCount >= promotion.maxUsagePerUser) {
+      return { valid: false, message: `You can only use this promotion ${promotion.maxUsagePerUser} time(s)` };
+    }
+  }
+  
+  // Mark coupon as used
+  await db.update(coupons)
+    .set({
+      isUsed: 1,
+      usedAt: new Date(),
+      usedForAppointmentId: appointmentId,
+    })
+    .where(eq(coupons.id, coupon.id));
+  
+  // Update member promotion usage
+  if (memberPromoResult.length > 0) {
+    await db.update(memberPromotions)
+      .set({
+        usageCount: sql`${memberPromotions.usageCount} + 1`,
+        lastUsedAt: new Date(),
+      })
+      .where(eq(memberPromotions.id, memberPromoResult[0].id));
+  } else {
+    await db.insert(memberPromotions).values({
+      memberId,
+      promotionId: promotion.id,
+      usageCount: 1,
+      lastUsedAt: new Date(),
+    });
+  }
+  
+  // Update promotion usage count
+  await db.update(promotions)
+    .set({
+      currentUsageCount: sql`${promotions.currentUsageCount} + 1`,
+    })
+    .where(eq(promotions.id, promotion.id));
+  
+  return { valid: true, promotion, message: "Coupon applied successfully" };
+}
+
+export async function getMemberPromotionUsage(memberId: number, promotionId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db.select().from(memberPromotions)
+    .where(and(
+      eq(memberPromotions.memberId, memberId),
+      eq(memberPromotions.promotionId, promotionId)
+    ))
+    .limit(1);
+  
+  return result.length > 0 ? result[0].usageCount : 0;
 }
