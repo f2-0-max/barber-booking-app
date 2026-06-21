@@ -5,6 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "./_core/env";
+import { sendOtpCode } from "./_core/smsService";
 import {
   checkSlotAvailable,
   createAppointment,
@@ -179,10 +180,21 @@ export const appRouter = router({
   members: router({
     // Request OTP
     requestOTP: publicProcedure
-      .input(z.object({ phoneNumber: z.string() }))
+      .input(z.object({ phoneNumber: z.string(), language: z.enum(["ar", "en", "tr"]).optional() }))
       .mutation(async ({ input }) => {
         const code = await generateOTP(input.phoneNumber);
-        console.log(`[OTP] Code for ${input.phoneNumber}: ${code}`);
+        
+        // Send OTP via SMS/WhatsApp
+        const sent = await sendOtpCode({
+          phoneNumber: input.phoneNumber,
+          code,
+          language: input.language || "ar",
+        });
+        
+        if (!sent && process.env.NODE_ENV === "production") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to send OTP" });
+        }
+        
         return { success: true, message: "OTP sent to phone" };
       }),
 

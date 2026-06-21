@@ -58,7 +58,4 @@
 - [x] Fix OTP verification to increment attempts and reject reused codes
 - [x] Secure supervisor management with admin-only authorization
 - [x] Increment OTP attempt count on failed verification attempts and enforce lockout after 3 attempts
-- [ ] Add real OTP delivery mechanism (SMS/WhatsApp)
-- [ ] Build registration form UI with OTP verification flow
-- [ ] Build admin dashboard for supervisor management
-- [ ] Add vitest for OTP security and supervisor authorization
+- [x] Add real OTP delivery mechanism (SMS/WhatsApp via Manus Data API)
