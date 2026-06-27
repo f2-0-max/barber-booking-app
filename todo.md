@@ -66,6 +66,6 @@
 - [x] Add tRPC procedures for promotions and coupons
 - [x] Design attractive promotional banner
 - [x] Integrate PromoBanner component in Home page
-- [ ] Create coupon generation UI for admin dashboard
-- [ ] Add coupon validation during appointment booking
-- [ ] Display promotion details in member registration flow
+- [ ] Add coupon generation UI to admin dashboard
+- [ ] Add coupon code input to appointment booking form
+- [x] Display promotion details in member registration flow

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Loader2, Phone, Lock } from "lucide-react";
+import { Loader2, Phone, Lock, Gift } from "lucide-react";
+import { useEffect } from "react";
 
 interface MemberRegistrationProps {
   open: boolean;
@@ -20,6 +21,9 @@ type Step = "phone" | "otp" | "details";
 const L = {
   title: { ar: "تسجيل عضوية جديدة", tr: "Yeni Üyelik Kaydı" },
   subtitle: { ar: "أنشئ حسابك للحصول على مزايا خاصة", tr: "Özel avantajlar için hesabınızı oluşturun" },
+  offer: { ar: "عرض حصري", tr: "Özel Teklif" },
+  freeService: { ar: "تنظيف بشرة مجاني", tr: "Ücretsiz Cilt Temizliği" },
+  firstBooking: { ar: "عند أول حجز عبر الموقع", tr: "İlk rezervasyonda" },
   phone: { ar: "رقم الجوال", tr: "Telefon Numarası" },
   phonePh: { ar: "05xxxxxxxxx", tr: "05xxxxxxxxx" },
   sendOTP: { ar: "إرسال رمز التحقق", tr: "Doğrulama Kodunu Gönder" },
@@ -151,6 +155,15 @@ export function MemberRegistration({
           <p className="text-xs text-gray-400 text-center mt-2">{t("subtitle", lang)}</p>
         </DialogHeader>
 
+        {/* Exclusive Offer Banner */}
+        <div className="bg-gradient-to-r from-[#c9a84c]/20 to-[#f0d080]/10 border border-[#c9a84c]/40 rounded-2xl p-4 flex items-start gap-3">
+          <Gift className="w-5 h-5 text-[#c9a84c] flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-xs font-bold text-[#c9a84c] uppercase tracking-wider">{t("offer", lang)}</p>
+            <p className="text-sm font-bold text-white mt-1">{t("freeService", lang)}</p>
+            <p className="text-xs text-gray-400 mt-1">{t("firstBooking", lang)}</p>
+          </div>
+        </div>
         <div className="space-y-4 py-4">
           {/* Phone Step */}
           {step === "phone" && (

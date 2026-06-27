@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { MemberRegistration } from "@/components/MemberRegistration";
 import { AdminDashboard } from "@/components/AdminDashboard";
-import { PromoBanner } from "@/components/PromoBanner";
+
 import { useAuth } from "@/_core/hooks/useAuth";
 
 const BANNER_URL = "/manus-storage/barber-banner_018cae17.jpg";
@@ -131,7 +131,6 @@ export default function Home() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
-  const [showPromoBanner, setShowPromoBanner] = useState(true);
   const { user } = useAuth();
 
   const isRTL = lang === "ar";
@@ -246,16 +245,6 @@ export default function Home() {
       <div className="sr-only">
         <p>حجز موعد حلاق علي في تبوك - تطبيق حجوزات أونلاين احترافي. احجز موعدك مع حلاق علي الآن. خدمات حلاقة فاخرة وحجوزات سهلة وآمنة.</p>
       </div>
-
-      {/* ── PROMOTIONAL BANNER ── */}
-      {showPromoBanner && (
-        <div className="px-4 py-4 bg-gradient-to-r from-[#1a1a1a] to-[#0a0a0a]">
-          <PromoBanner
-            onClose={() => setShowPromoBanner(false)}
-            showCloseButton={true}
-          />
-        </div>
-      )}
 
       {/* ── HERO BANNER ── */}
       <div className="relative w-full overflow-hidden" style={{ height: "52vw", maxHeight: 280, minHeight: 180 }}>

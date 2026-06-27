@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "./_core/env";
-import { sendOtpCode } from "./_core/smsService";
+import { sendOtpCode, sendSmsMessage } from "./_core/smsService";
 import {
   checkSlotAvailable,
   createAppointment,
@@ -216,11 +216,21 @@ export const appRouter = router({
         const verified = await verifyOTP(input.phoneNumber, input.code);
         if (!verified) throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid or expired OTP" });
         
+        // Send confirmation message via SMS/WhatsApp
+        const confirmationMessages: Record<string, string> = {
+          ar: `تم تأكيد رقم جوالك بنجاح! مرحباً بك في خدمة الحجوزات.`,
+          en: `Your phone number has been verified successfully! Welcome to our booking service.`,
+          tr: `Telefon numaranız başarıyla doğrulandı! Rezervasyon hizmetimize hoş geldiniz.`,
+        };
+        
+        const confirmMsg = confirmationMessages.ar;
+        await sendSmsMessage(input.phoneNumber, confirmMsg);
+        
         const existing = await getMemberByPhone(input.phoneNumber);
         if (existing) return { success: true, memberId: existing.id, isNew: false };
         
-        await registerMember(input.phoneNumber, input.name, input.email);
-        return { success: true, isNew: true };
+        const member = await registerMember(input.phoneNumber, input.name, input.email);
+        return { success: true, memberId: member.id, isNew: true };
       }),
 
     // Get member by phone
