@@ -66,18 +66,6 @@
 - [x] Add tRPC procedures for promotions and coupons
 - [x] Design attractive promotional banner
 - [x] Integrate PromoBanner component in Home page
-- [x] Add coupon generation UI to admin dashboard
-- [x] Add coupon code input to appointment booking form
+- [ ] Add coupon generation UI to admin dashboard
+- [ ] Add coupon code input to appointment booking form
 - [x] Display promotion details in member registration flow
-
-## VIP Clients Section
-- [x] Design 3D VIP client cards with premium aesthetic
-- [x] Build VIPClients component with animations
-- [x] Add 3 VIP client names (محمد الأحمري, فهد العتيبي, سلطان الدوسري)
-- [x] Integrate VIPClients section in Home page
-- [x] Add hover effects and floating animations
-
-## Remaining Tasks
-- [ ] Connect admin coupon form to tRPC API with real create mutation
-- [ ] Add loading/error handling for coupon creation
-- [ ] Add Vitest coverage for coupon creation backend
