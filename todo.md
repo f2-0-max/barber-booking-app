@@ -69,3 +69,15 @@
 - [ ] Add coupon generation UI to admin dashboard
 - [ ] Add coupon code input to appointment booking form
 - [x] Display promotion details in member registration flow
+
+## VIP Clients Section
+- [x] Design 3D VIP client cards with premium aesthetic
+- [x] Build VIPClients component with animations
+- [x] Add 3 VIP client names (محمد الأحمري, فهد العتيبي, سلطان الدوسري)
+- [x] Integrate VIPClients section in Home page
+- [x] Add hover effects and floating animations
+
+## Coupon System UI
+- [x] Add coupon code input field in booking form
+- [x] Add coupon creation UI in admin dashboard
+- [x] Add validation and error handling for coupon fields
