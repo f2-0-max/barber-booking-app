@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { MemberRegistration } from "@/components/MemberRegistration";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { VIPClients } from "@/components/VIPClients";
 
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -125,6 +126,7 @@ export default function Home() {
   const [viewAppt, setViewAppt] = useState<Appointment | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [couponCode, setCouponCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -585,6 +587,20 @@ export default function Home() {
                 onKeyDown={e => e.key === "Enter" && handleBook()}
               />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-gray-400 text-xs flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#c9a84c]" />
+                {lang === "ar" ? "كود الكوبون (اختياري)" : "Kupon Kodu (İsteğe Bağlı)"}
+              </Label>
+              <Input
+                value={couponCode}
+                onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                placeholder={lang === "ar" ? "أدخل كود الكوبون" : "Kupon kodunu girin"}
+                className="bg-[#0a0a0a] border-white/8 text-white placeholder:text-gray-700 rounded-2xl h-12 text-sm font-mono focus:border-[#c9a84c]/40 focus:ring-0 uppercase"
+                maxLength={12}
+              />
+            </div>
+
 
             <div className="flex gap-2.5 pt-1">
               <Button
@@ -779,6 +795,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* VIP Clients Section */}
+      <VIPClients />
 
       {/* Reviews Section */}
       <section className="px-4 py-8 border-t border-white/5">

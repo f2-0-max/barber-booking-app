@@ -60,6 +60,10 @@ export function AdminDashboard({
   lang,
 }: AdminDashboardProps) {
   const [memberPhone, setMemberPhone] = useState("");
+  const [showCouponForm, setShowCouponForm] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState("");
+  const [couponDescription, setCouponDescription] = useState("");
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
   const [confirmRemoveId, setConfirmRemoveId] = useState<number | null>(null);
   const isRTL = lang === "ar";
@@ -257,6 +261,73 @@ export function AdminDashboard({
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+
+          {/* Coupons Section */}
+          <div className="space-y-3 p-4 rounded-2xl bg-[#0a0a0a] border border-[#c9a84c]/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#c9a84c]">{lang === "ar" ? "إنشاء كوبون" : "Kupon Oluştur"}</h3>
+              <Button
+                onClick={() => setShowCouponForm(!showCouponForm)}
+                size="sm"
+                className="bg-gradient-to-r from-[#c9a84c] to-[#f0d080] text-black font-bold rounded-lg h-8 px-3 hover:shadow-lg hover:shadow-[#c9a84c]/30 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {showCouponForm && (
+              <div className="space-y-3 mt-4">
+                <div>
+                  <Label className="text-xs text-gray-400">{lang === "ar" ? "كود الكوبون" : "Kupon Kodu"}</Label>
+                  <Input
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder={lang === "ar" ? "مثال: WELCOME2024" : "Örnek: WELCOME2024"}
+                    className="bg-[#000] border border-[#c9a84c]/20 text-white placeholder-gray-600 rounded-2xl h-10 mt-1 font-mono"
+                    maxLength={20}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-400">{lang === "ar" ? "الخصم (%)" : "İndirim (%)"}  </Label>
+                  <Input
+                    type="number"
+                    value={couponDiscount}
+                    onChange={(e) => setCouponDiscount(e.target.value)}
+                    placeholder={lang === "ar" ? "مثال: 20" : "Örnek: 20"}
+                    className="bg-[#000] border border-[#c9a84c]/20 text-white placeholder-gray-600 rounded-2xl h-10 mt-1"
+                    min="1"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-400">{lang === "ar" ? "الوصف" : "Açıklama"}</Label>
+                  <Input
+                    value={couponDescription}
+                    onChange={(e) => setCouponDescription(e.target.value)}
+                    placeholder={lang === "ar" ? "مثال: خصم ترحيبي للعملاء الجدد" : "Örnek: Yeni müşteriler için hoş geldiniz indirimi"}
+                    className="bg-[#000] border border-[#c9a84c]/20 text-white placeholder-gray-600 rounded-2xl h-10 mt-1"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (couponCode && couponDiscount) {
+                      toast.success(lang === "ar" ? "تم إنشاء الكوبون بنجاح" : "Kupon başarıyla oluşturuldu");
+                      setCouponCode("");
+                      setCouponDiscount("");
+                      setCouponDescription("");
+                      setShowCouponForm(false);
+                    } else {
+                      toast.error(lang === "ar" ? "يرجى ملء جميع الحقول المطلوبة" : "Lütfen tüm gerekli alanları doldurun");
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-[#c9a84c] to-[#f0d080] text-black font-bold rounded-2xl h-10 hover:shadow-lg hover:shadow-[#c9a84c]/30 transition-all"
+                >
+                  {lang === "ar" ? "إنشاء الكوبون" : "Kupon Oluştur"}
+                </Button>
               </div>
             )}
           </div>
